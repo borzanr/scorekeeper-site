@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacidade do Score Keeper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap">
+
+<style>
+  /* Paleta clara com o lilás do manto e o dourado do brasão do app.
+     O lilás é o acento; o âmbar marca o que sai do aparelho. */
+  :root {
+    --ground: #FFFFFF;
+    --surface: #F5F3F8;
+    --surface-2: #ECE8F2;
+    --line: #DED8E7;
+    --line-strong: #C3B9D2;
+    --ink: #17111F;
+    --ink-soft: #544B60;
+    --ink-faint: #756B82;
+    --accent: #6B3FB3;
+    --accent-soft: #EFE7FA;
+    --warm: #955300;
+    --warm-soft: #FBEEDE;
+    --gold: #B8860B;
+    --focus: #6B3FB3;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0E0A14;
+      --surface: #17111F;
+      --surface-2: #221A2D;
+      --line: #2E2539;
+      --line-strong: #43384F;
+      --ink: #EFE9F5;
+      --ink-soft: #B9AEC6;
+      --ink-faint: #958AA3;
+      --accent: #C9A8FF;
+      --accent-soft: #2A1E3B;
+      --warm: #F2C14E;
+      --warm-soft: #2E2312;
+      --gold: #F2C14E;
+      --focus: #C9A8FF;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0E0A14;
+    --surface: #17111F;
+    --surface-2: #221A2D;
+    --line: #2E2539;
+    --line-strong: #43384F;
+    --ink: #EFE9F5;
+    --ink-soft: #B9AEC6;
+    --ink-faint: #958AA3;
+    --accent: #C9A8FF;
+    --accent-soft: #2A1E3B;
+    --warm: #F2C14E;
+    --warm-soft: #2E2312;
+    --gold: #F2C14E;
+    --focus: #C9A8FF;
+  }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Newsreader", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page { max-width: 44rem; margin: 0 auto; padding: 40px 24px 96px; }
+
+  .masthead {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
+    flex-wrap: wrap;
+    padding-bottom: 28px; border-bottom: 2px solid var(--ink);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand svg { display: block; flex: none; }
+  .brand-name { font-family: "IBM Plex Sans", system-ui, sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+
+  .langs { display: flex; flex: none; }
+  .langs button {
+    font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 12px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint);
+    background: var(--ground); border: 1px solid var(--line-strong); padding: 7px 13px; cursor: pointer;
+  }
+  .langs button:first-child { border-radius: 6px 0 0 6px; }
+  .langs button:not(:first-child) { border-left: none; }
+  .langs button:last-child { border-radius: 0 6px 6px 0; }
+  .langs button:hover { color: var(--ink); }
+  .langs button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--ground); }
+  :is(button, a):focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  h1 {
+    font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: clamp(30px, 5vw, 40px);
+    font-weight: 700; letter-spacing: -.03em; line-height: 1.1; text-wrap: balance; margin: 32px 0 16px;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 6px 28px; font-family: "IBM Plex Sans", system-ui, sans-serif;
+    font-size: 13.5px; color: var(--ink-soft); margin-bottom: 40px;
+  }
+  .meta b { font-weight: 600; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .07em; font-size: 11.5px; display: block; }
+  .lede { font-size: 20px; line-height: 1.55; margin: 0 0 40px; }
+
+  .split { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 16px; margin-bottom: 48px; }
+  .col { border: 1px solid var(--line); border-top: 3px solid var(--edge); border-radius: 10px; background: var(--surface); padding: 20px 22px 22px; }
+  .col.stays { --edge: var(--accent); }
+  .col.leaves { --edge: var(--warm); }
+  .col h2 { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin: 0 0 14px; }
+  .col.stays h2 { color: var(--accent); }
+  .col.leaves h2 { color: var(--warm); }
+  .col ul { margin: 0 0 14px; padding-left: 18px; }
+  .col li { margin-bottom: 5px; }
+  .col li::marker { color: var(--line-strong); }
+  .col p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); }
+
+  section.clause { margin-bottom: 40px; }
+  section.clause h2 {
+    font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 19px; font-weight: 600;
+    letter-spacing: -.015em; margin: 0 0 12px; display: flex; gap: 12px; align-items: baseline;
+  }
+  section.clause h2 .num { font-size: 13px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; flex: none; }
+  section.clause p { margin: 0 0 14px; }
+  section.clause p:last-child { margin-bottom: 0; }
+  section.clause ul { margin: 0 0 14px; padding-left: 20px; }
+  section.clause li { margin-bottom: 7px; }
+  section.clause li::marker { color: var(--line-strong); }
+
+  code { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .88em; background: var(--surface-2); border-radius: 4px; padding: 1.5px 5px; }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:hover { text-decoration-thickness: 2px; }
+
+  .none {
+    font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 15px; font-weight: 600;
+    color: var(--accent); background: var(--accent-soft); border-radius: 8px; padding: 14px 18px; margin: 0 0 14px;
+  }
+
+  .contact {
+    border-top: 1px solid var(--line); padding-top: 24px; margin-top: 56px; display: flex; flex-wrap: wrap;
+    gap: 8px 32px; align-items: baseline; font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 14px; color: var(--ink-soft);
+  }
+  .contact .who { font-weight: 600; color: var(--ink); }
+
+  .doc { display: none; }
+  .doc.on { display: block; }
+</style>
+
+<div class="page">
+
+  <div class="masthead">
+    <div class="brand">
+      <!-- Brasão simplificado, no dourado do ícone -->
+      <svg width="30" height="34" viewBox="0 0 30 34" aria-hidden="true">
+        <path d="M15 1 L28 4 V17 C28 25 22 30 15 33 C8 30 2 25 2 17 V4 Z" fill="var(--gold)"/>
+        <path d="M9 12 V22 M13 12 V22 M17 12 V22 M21 12 V22 M7 20 L23 14" stroke="var(--ground)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">Score Keeper</span>
+    </div>
+    <div class="langs">
+      <button type="button" data-lang="pt" aria-pressed="true">Português</button>
+      <button type="button" data-lang="en" aria-pressed="false">English</button>
+      <button type="button" data-lang="es" aria-pressed="false">Español</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ PT -->
+  <div class="doc on" lang="pt">
+    <h1>Política de Privacidade</h1>
+
+    <div class="meta">
+      <div><b>Responsável</b>RAFAEL BORZAN CONSULTORIA EM TECNOLOGIA DA INFORMACAO LTDA</div>
+      <div><b>Aplicativo</b>Score Keeper (com.borzanti.scorekeeper)</div>
+      <div><b>Vigência</b>15 de setembro de 2026</div>
+    </div>
+
+    <p class="lede">
+      O Score Keeper marca os pontos dos seus jogos. Ele não tem cadastro, não tem login e
+      não envia para lugar nenhum as partidas, os nomes ou os placares. A única coisa que sai
+      do seu aparelho é o necessário para exibir os anúncios que mantêm o app gratuito.
+    </p>
+
+    <div class="split">
+      <div class="col stays">
+        <h2>Fica no seu aparelho</h2>
+        <ul>
+          <li>As partidas e os pontos de cada rodada</li>
+          <li>Os nomes dos jogadores</li>
+          <li>O idioma escolhido no app</li>
+          <li>Quantas partidas você já encerrou</li>
+        </ul>
+        <p>Nada disso é enviado para nós nem para terceiros. Some quando você exclui a partida ou desinstala o app.</p>
+      </div>
+      <div class="col leaves">
+        <h2>Sai do seu aparelho</h2>
+        <ul>
+          <li>Identificador de publicidade do Android</li>
+          <li>Endereço IP e país aproximado</li>
+          <li>Modelo do aparelho, sistema e idioma</li>
+          <li>Exibições e cliques em anúncios</li>
+        </ul>
+        <p>Coletado pelo Google AdMob para exibir e medir anúncios. Não recebemos esses dados de forma individualizada.</p>
+      </div>
+    </div>
+
+    <section class="clause">
+      <h2><span class="num">01</span> Quem é o responsável</h2>
+      <p>
+        Este aplicativo é desenvolvido e mantido por <strong>RAFAEL BORZAN CONSULTORIA EM TECNOLOGIA DA INFORMACAO LTDA</strong>,
+        que atua como controladora dos dados pessoais tratados no contexto do Score Keeper,
+        nos termos da Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
+        Contato para assuntos de privacidade: <a href="mailto:admin@borzanti.com">admin@borzanti.com</a>.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">02</span> Dados que coletamos</h2>
+      <p class="none">Nenhum. Não pedimos nome, e-mail, telefone, localização nem qualquer cadastro.</p>
+      <p>
+        Não operamos servidores e não temos banco de dados de usuários. Os placares são
+        calculados e guardados no próprio aparelho, e o app funciona sem conexão com a internet.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">03</span> O que é guardado no seu aparelho</h2>
+      <p>Para o app funcionar entre uma sessão e outra, ele grava localmente:</p>
+      <ul>
+        <li><strong>Partidas</strong> — o tipo de jogo, as regras escolhidas, a data e os pontos de cada jogador em cada rodada, inclusive os detalhes do lançamento (cartas ou dados tocados).</li>
+        <li><strong>Jogadores</strong> — os nomes digitados, para aparecerem como sugestão nas próximas partidas. Podem ser apelidos; o app não pede nome real.</li>
+        <li><code>finished_matches</code> e <code>review_asked</code> — quantas partidas foram encerradas e se o convite para avaliar já apareceu, usados só para limitar a frequência dos anúncios de tela cheia e desse convite.</li>
+        <li><code>guides_seen</code> e o idioma escolhido — quais guias rápidos já foram vistos e o idioma selecionado em Ajustes.</li>
+      </ul>
+      <p>
+        Esses dados ficam na área privada do aplicativo, inacessível a outros apps do aparelho.
+        Para apagá-los, exclua as partidas na tela inicial do app ou desinstale-o.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">04</span> Anúncios</h2>
+      <p>
+        O Score Keeper é gratuito e se sustenta com anúncios do <strong>Google AdMob</strong>.
+        Para selecionar, exibir e medir esses anúncios, o SDK do Google pode coletar o
+        identificador de publicidade do Android, seu endereço IP, informações do aparelho e
+        eventos como exibição e clique. Não há anúncios durante a partida.
+      </p>
+      <p>
+        Esse tratamento é feito pelo Google, conforme a
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Política de Privacidade do Google</a>
+        e a página
+        <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">como o Google usa dados de sites e apps de parceiros</a>.
+        Recebemos apenas relatórios agregados — impressões, cliques e receita — sem
+        identificação de quem viu o quê.
+      </p>
+      <p>
+        <strong>Como reduzir:</strong> em <em>Configurações → Google → Anúncios</em>, no seu
+        Android, você pode redefinir ou excluir o identificador de publicidade e desativar a
+        personalização. Os anúncios continuam aparecendo, mas deixam de ser baseados nos
+        seus interesses.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">05</span> Permissões que o app pede</h2>
+      <ul>
+        <li><strong>Internet e estado da rede</strong> — apenas para carregar anúncios. O placar funciona offline.</li>
+        <li><strong>Identificador de publicidade</strong> (<code>AD_ID</code>) e serviços de anúncios — exigidos pelo SDK do AdMob.</li>
+      </ul>
+      <p>
+        O app <strong>não</strong> pede acesso a câmera, microfone, contatos, localização,
+        fotos ou arquivos.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">06</span> Crianças</h2>
+      <p>
+        O Score Keeper não é direcionado a menores de 13 anos e não coleta conscientemente
+        dados dessa faixa etária. Se você é responsável por uma criança e acredita que ela
+        nos forneceu algum dado, entre em contato para que seja removido.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">07</span> Seus direitos</h2>
+      <p>
+        A LGPD garante a você confirmação e acesso aos dados, correção, anonimização,
+        eliminação, portabilidade, informação sobre compartilhamentos e revogação de
+        consentimento.
+      </p>
+      <p>
+        Como não mantemos dados em servidores, a maior parte desses direitos é exercida
+        diretamente no aparelho: excluindo partidas, redefinindo o identificador de
+        publicidade ou desinstalando o app. Para qualquer outra solicitação, escreva para
+        <a href="mailto:admin@borzanti.com">admin@borzanti.com</a> — respondemos em até 15 dias.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">08</span> Usuários fora do Brasil</h2>
+      <p>
+        <strong>Europa e Reino Unido:</strong> quando o app for distribuído nessas regiões,
+        seu consentimento para anúncios personalizados será solicitado antes da exibição,
+        pela plataforma de consentimento do Google, e poderá ser alterado depois em
+        <em>Ajustes → Opções de privacidade</em>.
+      </p>
+      <p>
+        <strong>Califórnia:</strong> não vendemos dados pessoais. O compartilhamento com o
+        Google descrito no item 04 ocorre exclusivamente para viabilizar a publicidade.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">09</span> Por quanto tempo os dados ficam</h2>
+      <p>
+        Os dados no aparelho permanecem até você excluir as partidas ou desinstalar o app —
+        não há cópia em nenhum outro lugar. Os dados tratados pelo Google seguem os prazos
+        de retenção da política dele.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">10</span> Mudanças nesta política</h2>
+      <p>
+        Se o app passar a tratar dados de outra forma, esta página será atualizada com uma
+        nova data de vigência. Vale a versão publicada aqui no momento do uso.
+      </p>
+    </section>
+
+    <div class="contact">
+      <span class="who">RAFAEL BORZAN CONSULTORIA EM TECNOLOGIA DA INFORMACAO LTDA</span>
+      <span><a href="mailto:admin@borzanti.com">admin@borzanti.com</a></span>
+      <span>Última atualização: 15 de setembro de 2026</span>
+    </div>
+  </div>
+
+  <!-- ============================================================ EN -->
+  <div class="doc" lang="en">
+    <h1>Privacy Policy</h1>
+
+    <div class="meta">
+      <div><b>Data controller</b>RAFAEL BORZAN CONSULTORIA EM TECNOLOGIA DA INFORMACAO LTDA</div>
+      <div><b>Application</b>Score Keeper (com.borzanti.scorekeeper)</div>
+      <div><b>Effective</b>September 15, 2026</div>
+    </div>
+
+    <p class="lede">
+      Score Keeper keeps score for your games. There is no account, no login, and your
+      matches, names and scores are never sent anywhere. The only data that leaves your
+      device is what is needed to show the ads that keep the app free.
+    </p>
+
+    <div class="split">
+      <div class="col stays">
+        <h2>Stays on your device</h2>
+        <ul>
+          <li>Your matches and every round's points</li>
+          <li>Player names</li>
+          <li>The language chosen in the app</li>
+          <li>How many matches you have finished</li>
+        </ul>
+        <p>None of this reaches us or any third party. It is gone when you delete the match or uninstall the app.</p>
+      </div>
+      <div class="col leaves">
+        <h2>Leaves your device</h2>
+        <ul>
+          <li>Android advertising identifier</li>
+          <li>IP address and approximate country</li>
+          <li>Device model, OS and language</li>
+          <li>Ad impressions and clicks</li>
+        </ul>
+        <p>Collected by Google AdMob to serve and measure ads. We never receive this data at an individual level.</p>
+      </div>
+    </div>
+
+    <section class="clause">
+      <h2><span class="num">01</span> Who is responsible</h2>
+      <p>
+        This app is developed and maintained by <strong>RAFAEL BORZAN CONSULTORIA EM TECNOLOGIA DA INFORMACAO LTDA</strong>,
+        acting as the controller of personal data processed in the context of Score Keeper.
+        For privacy matters, contact <a href="mailto:admin@borzanti.com">admin@borzanti.com</a>.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">02</span> Data we collect</h2>
+      <p class="none">None. We ask for no name, email, phone number, location or account.</p>
+      <p>
+        We run no servers and keep no user database. Scores are calculated and stored on your
+        own device, and the app works with no internet connection.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">03</span> What is stored on your device</h2>
+      <p>So the app remembers things between sessions, it saves locally:</p>
+      <ul>
+        <li><strong>Matches</strong> — the game type, the chosen rules, the date and each player's points in each round, including how they were entered (cards or dice tapped).</li>
+        <li><strong>Players</strong> — the names you typed, so they show up as suggestions next time. They can be nicknames; the app never asks for real names.</li>
+        <li><code>finished_matches</code> and <code>review_asked</code> — how many matches were finished and whether the rating prompt has appeared, used only to cap how often full-screen ads and that prompt show up.</li>
+        <li><code>guides_seen</code> and the chosen language — which quick guides you have already seen and the language selected in Settings.</li>
+      </ul>
+      <p>
+        This data lives in the app's private storage, which other apps on the device cannot
+        read. To erase it, delete matches on the app's home screen, or uninstall the app.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">04</span> Advertising</h2>
+      <p>
+        Score Keeper is free and supported by <strong>Google AdMob</strong> ads. To select,
+        display and measure those ads, Google's SDK may collect your Android advertising
+        identifier, IP address, device information, and events such as impressions and clicks.
+        No ads are shown during a match.
+      </p>
+      <p>
+        That processing is carried out by Google under the
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>
+        and
+        <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">how Google uses data from sites and apps that use its services</a>.
+        We only receive aggregate reports — impressions, clicks and revenue — with no
+        indication of who saw what.
+      </p>
+      <p>
+        <strong>How to limit it:</strong> under <em>Settings → Google → Ads</em> on your
+        Android device you can reset or delete the advertising identifier and turn off
+        personalization. Ads still appear, but stop being based on your interests.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">05</span> Permissions the app requests</h2>
+      <ul>
+        <li><strong>Internet and network state</strong> — only to load ads. Scoring works offline.</li>
+        <li><strong>Advertising ID</strong> (<code>AD_ID</code>) and ad services — required by the AdMob SDK.</li>
+      </ul>
+      <p>
+        The app does <strong>not</strong> request camera, microphone, contacts, location,
+        photos or file access.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">06</span> Children</h2>
+      <p>
+        Score Keeper is not directed to children under 13 and does not knowingly collect data
+        from them. If you are a parent or guardian and believe a child provided us with
+        data, contact us and it will be removed.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">07</span> Your rights</h2>
+      <p>
+        Depending on where you live, you may have the right to access, correct, delete or
+        port your personal data, to object to processing, and to withdraw consent.
+      </p>
+      <p>
+        Because we keep no data on servers, most of these are exercised directly on the
+        device: deleting matches, resetting the advertising identifier, or uninstalling the
+        app. For anything else, write to <a href="mailto:admin@borzanti.com">admin@borzanti.com</a>
+        — we reply within 15 days.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">08</span> Regional notes</h2>
+      <p>
+        <strong>Europe and the UK:</strong> where the app is distributed in these regions,
+        your consent for personalized advertising is requested before any ad is shown, via
+        Google's consent platform, and can be changed later under
+        <em>Settings → Privacy choices</em>.
+      </p>
+      <p>
+        <strong>California:</strong> we do not sell personal information. The sharing with
+        Google described in section 04 happens solely to make advertising possible.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">09</span> How long data is kept</h2>
+      <p>
+        Data on your device stays until you delete the matches or uninstall the app — there
+        is no copy anywhere else. Data processed by Google follows Google's own retention policy.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">10</span> Changes to this policy</h2>
+      <p>
+        If the app starts handling data differently, this page will be updated with a new
+        effective date. The version published here at the time of use is the one that applies.
+      </p>
+    </section>
+
+    <div class="contact">
+      <span class="who">RAFAEL BORZAN CONSULTORIA EM TECNOLOGIA DA INFORMACAO LTDA</span>
+      <span><a href="mailto:admin@borzanti.com">admin@borzanti.com</a></span>
+      <span>Last updated: September 15, 2026</span>
+    </div>
+  </div>
+
+  <!-- ============================================================ ES -->
+  <div class="doc" lang="es">
+    <h1>Política de Privacidad</h1>
+
+    <div class="meta">
+      <div><b>Responsable</b>RAFAEL BORZAN CONSULTORIA EM TECNOLOGIA DA INFORMACAO LTDA</div>
+      <div><b>Aplicación</b>Score Keeper (com.borzanti.scorekeeper)</div>
+      <div><b>Vigencia</b>15 de septiembre de 2026</div>
+    </div>
+
+    <p class="lede">
+      Score Keeper anota los puntos de tus juegos. No tiene registro ni inicio de sesión, y
+      nunca envía a ningún lado tus partidas, nombres ni marcadores. Lo único que sale de tu
+      dispositivo es lo necesario para mostrar los anuncios que mantienen la app gratuita.
+    </p>
+
+    <div class="split">
+      <div class="col stays">
+        <h2>Se queda en tu dispositivo</h2>
+        <ul>
+          <li>Las partidas y los puntos de cada ronda</li>
+          <li>Los nombres de los jugadores</li>
+          <li>El idioma elegido en la app</li>
+          <li>Cuántas partidas has terminado</li>
+        </ul>
+        <p>Nada de esto llega a nosotros ni a terceros. Desaparece cuando eliminas la partida o desinstalas la app.</p>
+      </div>
+      <div class="col leaves">
+        <h2>Sale de tu dispositivo</h2>
+        <ul>
+          <li>Identificador de publicidad de Android</li>
+          <li>Dirección IP y país aproximado</li>
+          <li>Modelo del dispositivo, sistema e idioma</li>
+          <li>Impresiones y clics en anuncios</li>
+        </ul>
+        <p>Lo recopila Google AdMob para mostrar y medir anuncios. No recibimos estos datos de forma individualizada.</p>
+      </div>
+    </div>
+
+    <section class="clause">
+      <h2><span class="num">01</span> Quién es el responsable</h2>
+      <p>
+        Esta aplicación la desarrolla y mantiene <strong>RAFAEL BORZAN CONSULTORIA EM
+        TECNOLOGIA DA INFORMACAO LTDA</strong>, que actúa como responsable del tratamiento de
+        los datos personales en el contexto de Score Keeper. Para asuntos de privacidad:
+        <a href="mailto:admin@borzanti.com">admin@borzanti.com</a>.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">02</span> Datos que recopilamos</h2>
+      <p class="none">Ninguno. No pedimos nombre, correo, teléfono, ubicación ni registro alguno.</p>
+      <p>
+        No tenemos servidores ni base de datos de usuarios. Los marcadores se calculan y se
+        guardan en tu propio dispositivo, y la app funciona sin conexión a internet.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">03</span> Qué se guarda en tu dispositivo</h2>
+      <p>Para que la app recuerde cosas entre sesiones, guarda localmente:</p>
+      <ul>
+        <li><strong>Partidas</strong> — el tipo de juego, las reglas elegidas, la fecha y los puntos de cada jugador en cada ronda, incluido cómo se anotaron (cartas o dados tocados).</li>
+        <li><strong>Jugadores</strong> — los nombres escritos, para que aparezcan como sugerencia la próxima vez. Pueden ser apodos; la app nunca pide nombres reales.</li>
+        <li><code>finished_matches</code> y <code>review_asked</code> — cuántas partidas se terminaron y si ya apareció la invitación a valorar, usados solo para limitar la frecuencia de los anuncios a pantalla completa y de esa invitación.</li>
+        <li><code>guides_seen</code> y el idioma elegido — qué guías rápidas ya viste y el idioma seleccionado en Ajustes.</li>
+      </ul>
+      <p>
+        Estos datos viven en el almacenamiento privado de la app, al que otras aplicaciones no
+        pueden acceder. Para borrarlos, elimina las partidas en la pantalla de inicio de la app
+        o desinstálala.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">04</span> Publicidad</h2>
+      <p>
+        Score Keeper es gratuita y se sostiene con anuncios de <strong>Google AdMob</strong>.
+        Para seleccionar, mostrar y medir esos anuncios, el SDK de Google puede recopilar tu
+        identificador de publicidad de Android, tu dirección IP, información del dispositivo y
+        eventos como impresiones y clics. No se muestran anuncios durante la partida.
+      </p>
+      <p>
+        Ese tratamiento lo realiza Google conforme a la
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Política de Privacidad de Google</a>
+        y a
+        <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">cómo Google usa los datos de sitios y apps que utilizan sus servicios</a>.
+        Nosotros solo recibimos informes agregados —impresiones, clics e ingresos— sin saber
+        quién vio qué.
+      </p>
+      <p>
+        <strong>Cómo limitarlo:</strong> en <em>Ajustes → Google → Anuncios</em> de tu Android
+        puedes restablecer o eliminar el identificador de publicidad y desactivar la
+        personalización. Los anuncios siguen apareciendo, pero dejan de basarse en tus intereses.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">05</span> Permisos que pide la app</h2>
+      <ul>
+        <li><strong>Internet y estado de la red</strong> — solo para cargar anuncios. El marcador funciona sin conexión.</li>
+        <li><strong>Identificador de publicidad</strong> (<code>AD_ID</code>) y servicios de anuncios — los exige el SDK de AdMob.</li>
+      </ul>
+      <p>
+        La app <strong>no</strong> pide acceso a cámara, micrófono, contactos, ubicación, fotos
+        ni archivos.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">06</span> Menores</h2>
+      <p>
+        Score Keeper no está dirigida a menores de 13 años y no recopila conscientemente datos
+        de ellos. Si eres madre, padre o tutor y crees que un menor nos facilitó algún dato,
+        escríbenos y lo eliminaremos.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">07</span> Tus derechos</h2>
+      <p>
+        Según dónde vivas, puedes tener derecho a acceder a tus datos personales, corregirlos,
+        eliminarlos o portarlos, a oponerte al tratamiento y a retirar tu consentimiento.
+      </p>
+      <p>
+        Como no guardamos datos en servidores, la mayoría de estos derechos se ejercen
+        directamente en el dispositivo: eliminando partidas, restableciendo el identificador
+        de publicidad o desinstalando la app. Para cualquier otra solicitud, escribe a
+        <a href="mailto:admin@borzanti.com">admin@borzanti.com</a> — respondemos en un plazo de 15 días.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">08</span> Notas por región</h2>
+      <p>
+        <strong>Europa y Reino Unido:</strong> donde la app se distribuye en estas regiones,
+        se solicita tu consentimiento para la publicidad personalizada antes de mostrar
+        cualquier anuncio, mediante la plataforma de consentimiento de Google, y puedes
+        cambiarlo después en <em>Ajustes → Opciones de privacidad</em>.
+      </p>
+      <p>
+        <strong>California:</strong> no vendemos información personal. El intercambio con
+        Google descrito en el apartado 04 ocurre únicamente para hacer posible la publicidad.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">09</span> Cuánto tiempo se conservan los datos</h2>
+      <p>
+        Los datos de tu dispositivo permanecen hasta que eliminas las partidas o desinstalas
+        la app — no hay copia en ningún otro sitio. Los datos que trata Google siguen la
+        política de conservación de Google.
+      </p>
+    </section>
+
+    <section class="clause">
+      <h2><span class="num">10</span> Cambios en esta política</h2>
+      <p>
+        Si la app pasa a tratar datos de otra forma, esta página se actualizará con una nueva
+        fecha de vigencia. Rige la versión publicada aquí en el momento de uso.
+      </p>
+    </section>
+
+    <div class="contact">
+      <span class="who">RAFAEL BORZAN CONSULTORIA EM TECNOLOGIA DA INFORMACAO LTDA</span>
+      <span><a href="mailto:admin@borzanti.com">admin@borzanti.com</a></span>
+      <span>Última actualización: 15 de septiembre de 2026</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  var TAGS = { pt: "pt-BR", en: "en", es: "es" };
+  var docs = document.querySelectorAll(".doc");
+  var buttons = document.querySelectorAll(".langs button");
+
+  function show(lang) {
+    docs.forEach(function (doc) { doc.classList.toggle("on", doc.lang === lang); });
+    buttons.forEach(function (btn) { btn.setAttribute("aria-pressed", String(btn.dataset.lang === lang)); });
+    document.documentElement.lang = TAGS[lang] || lang;
+  }
+
+  buttons.forEach(function (btn) {
+    btn.addEventListener("click", function () { show(btn.dataset.lang); });
+  });
+
+  // Abre no idioma do aparelho, caindo em inglês para qualquer outro.
+  var browser = (navigator.language || "").toLowerCase();
+  show(browser.indexOf("pt") === 0 ? "pt" : browser.indexOf("es") === 0 ? "es" : "en");
+</script>
+</html>
